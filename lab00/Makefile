@@ -2,9 +2,6 @@
 # LAB 00
 #
 
-# Set environment variables
-export GIT_REPOSITORY?="https://github.com/ruifelixpereira/containers-101-workshop.git"
-
 # Permanent local overrides
 -include .env
 
@@ -26,7 +23,3 @@ setup-docker:
 # Test docker
 test-docker:
 	docker run hello-world
-
-# Clone the git repository
-get-labs:
-	git clone $(GIT_REPOSITORY)

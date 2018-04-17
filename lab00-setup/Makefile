@@ -36,3 +36,7 @@ setup-az:
 # Test az cli 2.0
 test-az:
 	az --version
+
+# Install jq
+setup-jq:
+	sudo apt install jq -y

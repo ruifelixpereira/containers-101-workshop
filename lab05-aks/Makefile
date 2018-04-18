@@ -41,8 +41,8 @@ create:
 		--name $(CLUSTER_NAME) \
 		--node-count 2 \
 		--node-vm-size Standard_A2_v2 \
-		--generate-ssh-keys \
-		--no-wait
+		--generate-ssh-keys
+#		--no-wait
 
 install-cli:
 	az aks install-cli
@@ -54,7 +54,8 @@ validate:
 	az aks get-credentials \
 		--resource-group $(RESOURCE_GROUP) \
 		--name $(CLUSTER_NAME)
-	kubectl get nodes		
+	kubectl get nodes \
+	kubectl cluster-info		
 
 # Destroy the entire resource group
 destroy:
@@ -111,6 +112,11 @@ upgrade-cluster-to-%:
 # Open the management console
 browse-console:
 	az aks browse --resource-group $(RESOURCE_GROUP) --name $(CLUSTER_NAME)
+
+# Proxy to the management console
+proxy:
+	kubectl proxy --port 8001
+
 
 # Scale number of worker pods
 scale-worker:

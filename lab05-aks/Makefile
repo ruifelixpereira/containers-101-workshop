@@ -5,14 +5,14 @@
 
 # Set environment variables
 export LOCATION?=westeurope
-export NAMESPACE_PREFIX?=sonae-wks
-export APP_NAME?=face-recognition
-export RESOURCE_GROUP=$(NAMESPACE_PREFIX)-lab4
+export NAMESPACE_PREFIX?=cnt101-wks
+export APP_NAME?=azure-vote
+export RESOURCE_GROUP=$(NAMESPACE_PREFIX)-lab5
 export PLAIN_PREFIX?=$(shell echo $(NAMESPACE_PREFIX) | sed -e 's/-//g')
-export CLUSTER_NAME?=rfpSonaeAKSCluster
+export CLUSTER_NAME?=rfpCnt101AKSCluster
 export SUBSCRIPTION?=5dd549af-d55f-4c2c-ba14-8bd7699a59b3
-export ACR_NAME?=sonaereg
-export ACR_RESOURCEGROUP?=sonae-wks-lab2
+export ACR_NAME?=cnt101reg
+export ACR_RESOURCEGROUP?=$(NAMESPACE_PREFIX)-lab2
 
 # Permanent local overrides
 -include .env

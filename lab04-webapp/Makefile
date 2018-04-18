@@ -10,9 +10,6 @@ export APP_NAME?=my-hello-app
 export ACR_NAME?=cnt101reg
 export ACR_RESOURCEGROUP?=$(NAMESPACE_PREFIX)-lab2
 export SUBSCRIPTION?=5dd549af-d55f-4c2c-ba14-8bd7699a59b3
-export ACI_NAME?=aci-hello-app
-export ACI_DNS?=rfp-aci-hello-app
-
 
 # Permanent local overrides
 -include .env
@@ -20,7 +17,6 @@ export ACI_DNS?=rfp-aci-hello-app
 # Get ACR password
 ACR_PWD=$(shell az acr credential show --name $(ACR_NAME) --query "passwords[0].value")
 ACR_LOGIN_SERVER=$(shell az acr show --name $(ACR_NAME) --query loginServer --output tsv)
-ACI_FQDN=$(shell az container show --resource-group $(RESOURCE_GROUP) --name $(ACI_NAME) --query ipAddress.fqdn)
 WEBAPP_URL=$(shell az webapp show --resource-group $(RESOURCE_GROUP) --name $(APP_NAME) --query hostNames --output tsv)
 
 # Set the CLI to the right subscription
@@ -47,7 +43,7 @@ create:
 		--deployment-container-image-name hello-world
 	az webapp config container set \
 		--name $(APP_NAME) \
-		--resource-group myResourceGroup \
+		--resource-group $(RESOURCE_GROUP) \
 		--docker-custom-image-name $(ACR_LOGIN_SERVER)/$(APP_NAME):v1 \
 		--docker-registry-server-url $(ACR_LOGIN_SERVER) \
 		--docker-registry-server-user $(ACR_NAME) \
@@ -73,4 +69,4 @@ config-env:
 	az webapp config appsettings set \
 		--resource-group $(RESOURCE_GROUP) \
 		--name $(APP_NAME) \
-		--settings HELLO=8000
+		--settings "APP_HELLO=8000"

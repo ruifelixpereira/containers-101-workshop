@@ -1,7 +1,6 @@
 #
-# LAB 04 and 05
+# LAB 05
 #
-
 
 # Set environment variables
 export LOCATION?=westeurope
@@ -9,10 +8,10 @@ export NAMESPACE_PREFIX?=cnt101-wks
 export APP_NAME?=azure-vote
 export RESOURCE_GROUP=$(NAMESPACE_PREFIX)-lab5
 export PLAIN_PREFIX?=$(shell echo $(NAMESPACE_PREFIX) | sed -e 's/-//g')
-export CLUSTER_NAME?=rfpCnt101AKSCluster
+export CLUSTER_NAME?=rfpAKSCluster
 export SUBSCRIPTION?=5dd549af-d55f-4c2c-ba14-8bd7699a59b3
-export ACR_NAME?=cnt101reg
-export ACR_RESOURCEGROUP?=$(NAMESPACE_PREFIX)-lab2
+export ACR_NAME?=rfp01
+export ACR_RESOURCEGROUP?=containerreg
 
 # Permanent local overrides
 -include .env
@@ -54,7 +53,7 @@ validate:
 	az aks get-credentials \
 		--resource-group $(RESOURCE_GROUP) \
 		--name $(CLUSTER_NAME)
-	kubectl get nodes \
+	kubectl get nodes
 	kubectl cluster-info		
 
 # Destroy the entire resource group
@@ -118,14 +117,14 @@ proxy:
 	kubectl proxy --port 8001
 
 
-# Scale number of worker pods
-scale-worker:
-	kubectl scale deployment worker \
+# Scale number of frontend pods
+scale-frontend:
+	kubectl scale deployment azure-vote-front \
 		--replicas=2
 
 # Configure auto-scale
 auto-scale:
-	kubectl autoscale deployment worker \
+	kubectl autoscale deployment azure-vote-front \
 		--min=2 \
 		--max=15 \
 		--cpu-percent=80

@@ -3,7 +3,7 @@
 #
 
 # Permanent local overrides
--include .env
+-include ../.env
 
 # Install docker-ce
 setup-docker:
@@ -40,3 +40,7 @@ test-az:
 # Install jq
 setup-jq:
 	sudo apt install jq -y
+
+# Environment
+echo:
+	setup

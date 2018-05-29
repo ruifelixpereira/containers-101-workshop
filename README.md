@@ -73,6 +73,12 @@ and in the end just test it with:
 jq
 ```
 
+**CentOS Install**
+
+IF you have CentOS you can follow the steps to prepara the workstation:
+* Docker CE [install](https://docs.docker.com/install/linux/docker-ce/centos/#set-up-the-repository).
+* az CLI 2.0 [install](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-yum?view=azure-cli-latest)
+
 
 ## Lab 01. Containers Hello World (10 min)
 
@@ -458,35 +464,35 @@ make check-access-to-acr
 
 We have available the Kubernetes console that is only accessible locally with a tunnel. To start the tunnel you can do it in 2 ways:
 
-If you are in your workstation:
+If you are in your workstation you can open a browser to the console like this:
 
 ```shell
 make browse-console &
 ```
 
-If you are in a remote workstation using SSH:
+If you are in a remote workstation using SSH, start the proxy:
 
 ```shell
 kubectl proxy --port 8001 &
 ```
 
-and create a tunnel to the remote workstation using something like this sample:
+create a tunnel to the remote workstation using something like this sample:
 
 ```shell
-ssh -L 9000:127.0.0.1:8001 azureuser@52.138.214.117
+ssh -L 9000:127.0.0.1:8001 azureuser@<your workstation ip>
 ```
 
 And then browse to [http://localhost:9000/ui](http://localhost:9000/ui)
 
 In case you get an error like this one:
 
+![lab05-10-proxyerr](./media/lab05-10-proxyerr.png)
 
-
-just replace the URL from this
+just replace the URL from this:
 
 http://localhost:9000/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/
 
-to this
+to this:
 
 http://localhost:9000/api/v1/namespaces/kube-system/services/http:kubernetes-dashboard:/proxy/
 
@@ -576,47 +582,185 @@ Let's deploy this app to our cluster:
 make deploy-app
 ```
 
-![lab04-02-url](./media/lab04-02-url.png)
+![lab05-11-deploy](./media/lab05-11-deploy.png)
 
-You can also check the docker registry settings of the new web app:
+You can check in the Kubernetes console the deployment progress until you get this:
 
-![lab04-03-docker](./media/lab04-03-docker.png)
+![lab05-12-deploy-web](./media/lab05-12-deploy-web.png)
 
+Since this is the firt application with a load balancer that we deploy, it might take a couple of minutes to get an assigned IP address for the azure-vote-front web application.
 
-Now for testing just use wget
+You can get the IP adress from the Kubernetes console:
 
-```shell
-make test-webapp
-```
+![lab05-13-ip](./media/lab05-13-ip.png)
 
-![lab04-04-wget](./media/lab04-04-wget.png)
-
-or invoke the url in your browser, like in my example: 
-`http://my-hello-app.azurewebsite.net`
-
-![lab04-05-test](./media/lab04-05-test.png)
-
-You can also change application settings environment variables like this example:
+Or running
 
 ```shell
-make config-env
+make app-public-ip
 ```
 
-![lab04-06-env](./media/lab04-06-env.png)
+![lab05-14-ip](./media/lab05-14-ip.png)
 
-And you can also check these changes in the Azure Portal
+Now just test the newly deployed application opening your brwser with the collected IP address: `http://[you-ip-address]`
 
-![lab04-07-env-protal](./media/lab04-07-env-portal.png)
-
-
-Alternatively, if you prefer you can follow the [step by step](https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough).
+![lab05-15-app](./media/lab05-15-app.png)
 
 
+**Scale the application**
 
-In this lab we used the Azure Vote sample applciation. If you want mode details about it just check [here](https://docs.microsoft.com/en-us/azure/aks/tutorial-kubernetes-prepare-app).
+In a Kubernetes cluster is very simple to scale our application.
+
+At this moment our applciation has 2 pods:
+* Redis cache listening at port 6379.
+* Web frontend listening at port 80 that uses data residing in the Redis cache.
+
+You can check this with
+
+```shell
+make get-deployments
+```
+
+or
+
+```shell
+make get-pods
+```
+
+![lab05-16-pods](./media/lab05-16-pods.png)
+
+or in the Kubernetes console
+
+![lab05-17-pods](./media/lab05-17-pods.png)
+
+Now let's scale up our azure-vote-front from 1 to 2 pods (e.g., to serve more users in the front-end). Again, we can do this using CLI commands
+
+```shell
+make scale-frontend
+```
+
+![lab05-18-scale](./media/lab05-18-scale.png)
+
+and we can check it
+
+```shell
+make get-deployments
+```
+
+![lab05-19-scale](./media/lab05-19-scale.png)
+
+Alternatively, we can scale using the Kubernetes console by navigating to `Overview / Deployments` and choosing the `Scale` option for the desired Deployment
+
+![lab05-20-scale](./media/lab05-20-scale.png)
+
+choose the desired number of pods and hit `OK`
+
+![lab05-21-scale](./media/lab05-21-scale.png)
+
+You can check the progress immediately
+
+![lab05-22-scale](./media/lab05-22-scale.png)
 
 
+Since we scaled up the `azure-vote-front` you can check the associated service and realize that the load balancer now can use the 3 pods
 
-### Lab 06: Advanced Kubernetes (40 min)
+![lab05-23-lb-01](./media/lab05-23-lb-01.png)
+![lab05-24-lb-02](./media/lab05-24-lb-02.png)
 
-TBD
+
+### Lab 06: AKS Persistent Volumes
+
+In many scenarios we don't want to use the internal container's filesystem since it can be temporary and we want to have a persistent storage that can be shared amongst several containers. Imagine the storage to store data files for a database cluster.
+
+![kubernetes-sql-after-node-fail.png
+](./media/kubernetes-sql-after-node-fail.png)
+
+In our scenario we want ot have a shared storage for all the instances of `azure-vote-front`. To do this in Kubernetes we need to create what's called a `Persistent Volume` and then mount this volume in the desired pods.
+
+Let's start by checking that our environment is ready:
+
+```shell
+cd containers-101-workshop
+cd lab06-aks-persistent-volumes
+make
+```
+
+![lab06-01-default](./media/lab06-01-default.png)
+
+**Check Storage classes**
+
+To create a `Persistent Volume` we need to decide which `Storage Class` we want according to our requirements.
+
+First we need to check which `Storage Classes` exist by default in our Kubernetes cluster.
+
+```shell
+make get-storageclasses
+```
+
+![lab06-02-storageclasses](./media/lab06-02-storageclasses.png)
+
+You can also use the Kubernetes console:
+
+![lab06-03-storageclasses](./media/lab06-03-storageclasses.png)
+
+We can see that by default we have 2 storage classes:
+* `default` - using Azure Standard storage with managed disks;
+* `managed-premium` - using Azure Premium Storage with managed disks.
+
+If we need to create an addicional storage classe (e.g., unmanaged disks) we can use a sample yaml like this one:
+
+```yaml
+kind: StorageClass
+apiVersion: storage.k8s.io/v1beta1
+metadata:
+     name: azure-disk-standard
+provisioner: kubernetes.io/azure-disk
+parameters:
+  storageaccounttype: Standard_LRS
+  kind: Managed
+```
+
+An deploy it with
+
+```shell
+kubectl create -f sample-storageclass.yaml
+```
+
+**Create Persistent Volume**
+
+After deciding on the `Storage Class` let's create a new `Persistent Volume` using another yaml file like this one:
+
+```yaml
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: my-data
+  annotations:
+    volume.beta.kubernetes.io/storage-class: default
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 8Gi
+```
+
+In this example we are creating a volume named `my-data` with `8Gi` using the storage class `default`.
+
+Let's deploy it with:
+
+```shell
+make create-pvc
+```
+
+![lab06-05-pvc](./media/lab06-05-pvc.png)
+
+Since in Azure a new disk will be created for this Persistent Volume, it may take a couple of minutes to finish. You can check the status in the Kubernetes console:
+
+![lab06-07-pvc](./media/lab06-07-pvc.png)
+
+...
+
+
+### Lab 07: AKS Custom VNET
+

@@ -7,6 +7,7 @@ export LOCATION?=westeurope
 export NAMESPACE_PREFIX?=cnt101-wks
 export RESOURCE_GROUP=$(NAMESPACE_PREFIX)-lab4
 export APP_NAME?=my-hello-app
+export IMAGE_NAME?=my-hello-app
 export ACR_NAME?=cnt101reg
 export ACR_RESOURCEGROUP?=$(NAMESPACE_PREFIX)-lab2
 export SUBSCRIPTION?=5dd549af-d55f-4c2c-ba14-8bd7699a59b3
@@ -44,7 +45,7 @@ create:
 	az webapp config container set \
 		--name $(APP_NAME) \
 		--resource-group $(RESOURCE_GROUP) \
-		--docker-custom-image-name $(ACR_LOGIN_SERVER)/$(APP_NAME):v1 \
+		--docker-custom-image-name $(ACR_LOGIN_SERVER)/$(IMAGE_NAME):v1 \
 		--docker-registry-server-url $(ACR_LOGIN_SERVER) \
 		--docker-registry-server-user $(ACR_NAME) \
 		--docker-registry-server-password $(ACR_PWD)

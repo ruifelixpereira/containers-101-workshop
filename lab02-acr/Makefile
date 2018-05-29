@@ -11,7 +11,7 @@ export ACR_NAME?=cnt101reg
 export SUBSCRIPTION?=5dd549af-d55f-4c2c-ba14-8bd7699a59b3
 
 # Permanent local overrides
--include .env
+-include ../.env
 
 # Set the CLI to use my subscription
 default:

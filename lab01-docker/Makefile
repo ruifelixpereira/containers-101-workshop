@@ -6,7 +6,7 @@
 export APP_NAME?=my-hello-app
 
 # Permanent local overrides
--include .env
+-include ../.env
 
 # Create a new container image with my app
 build:
